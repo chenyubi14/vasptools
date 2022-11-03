@@ -152,7 +152,7 @@ def plot_ks(ax,ksupstates,ksdownstates,maxx,maxy, defectenergyVBM,tol=0.5, initi
         plot_panel_ks(ax, ksdownstates, maxx, maxy, defectenergyVBM, tol=0.5, initial_mode=initial_mode, updown=0)
 
 #
-initial_mode=2
+initial_mode=1 # see the comment at line 146
 
 # energy of CBM and VBM in perfect supercells
 perfenergyCBM,perfenergyVBM = cbm_vbm(f1)
