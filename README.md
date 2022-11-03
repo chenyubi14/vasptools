@@ -32,6 +32,8 @@ If you want to make your own template, it is very easy. Just edit INCAR_template
 `python $SCRIPT/update_edit_incar.py mode`: please read the file update_edit_incar.py. It contains many modes to fit in different situations. 
 For example, if you want to change one tag for many directories. Create a mode in the update_edit_incar.py file, and run this command.
 
+`python $SCRIPT/out_wavefunc1.py + arguments`: will output a file storing the wave function of a band. The output file will be readable by VESTA
+
 # usage for specific functions
 
 ## phonon calculations 
