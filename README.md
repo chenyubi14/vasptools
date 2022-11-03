@@ -10,16 +10,46 @@ You can click the Preview link to take a look at your changes.
 
 I post every function I developted, but they are sometimes one-time used. I am tired of deleting them, so you may ignore the extra functions.
 
+I recommend download the scripts in a single folder, so add `export SCRIPT=/path/to/scripts` in your ~/.bashrc or ~/.bash_profile files.
 
-# module file descriptions
-functions.py: small functions that is useful for many situations
-class1_read.py: a class of read input and output files
-class2_update_input.py: a class of editting input files
-class3_smaller_folder.py: a class dealing with operations on smaller folders like 3rd and 4th folders
-class4_supercellgenerate.py: generate supercell files and edit its input
-class98_intermediate_data.py: get intermediate data from unit cells and use them in supercell
-class99_last_drawinfo.py: a class stored information for drawing graphs
-incar.py: write INCAR with comments and fixed format. All the comments are stored in this file. This file can be generated from incar_generate.py  INCAR_template in this folder old+incar. Simply use python incar_generate.py
+# VASP inputs
+I have a special INCAR format. You may look at INCAR_template for an example. The fixed INCAR format has several benefits: 
+
+(1) You can directly `diff path1/INCAR path2/INCAR` in terminal to see the difference of two jobs.
+
+(2) You will have a way to edit INCAR easily, as provided by my code.
+
+If you want to make your own template, it is very easy. Just edit INCAR_template, and run `python incar_generate.py`, so the file class0_incar.py, which stores INCAR tags with comments, will be updated with new formats. Remember to not use `=` randomly, because incar_generate.py uses `=` to identify a tag.
+
+# frequently used functions and commands
+
+`python $SCRIPT/op_bs_dos.py` for submit a job to calculate density of states
+`python $SCRIPT/draw_dos1_element.py` can plot the density of state plot
+
+
+`python $SCRIPT/draw_KS1_insideBG.py` draws the Kohn-Sham(KS) states within band gap. It is ususally useful to plot defect KS states.
+
+
+## file types
+class*.py (files starting with class): module files to be imported/used in other files
+
+  class0_functions1,2,3.py: small functions
+
+  class1_read.py: a class to read VASP input and output
+
+  class2_update_input.py: a class of editting VASP input files
+
+  class3_smaller_folder.py: a class dealing with op_*.py files, it usually generate subdirectories for operations like density of state calculations
+
+  class95_energyf_fromTL.py: plot formation energy from transition levels, usualy from others' calculated transition levels
+
+  class96_formationenergy.py: plot formation energy diagram from own computed jobs
+
+  class99_last_drawmulinfo.py: a class stored information for drawing graphs
+
+  class0_incar.py: a function write INCAR file with detailed comments.
+
+
 
 # generate file descriptions. Generate supercells like POSCAR, INCAR, KPOINTS for various defects
 # usage: calling at vasp-job directories. e.g. python $SCRIPT/generate_supercell.py
