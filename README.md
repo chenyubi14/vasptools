@@ -8,7 +8,7 @@ chenyubi14/chenyubi14 is a ✨ special ✨ repository because its `README.md` (t
 You can click the Preview link to take a look at your changes.
 --->
 
-I post every function I developted, but they are sometimes one-time used. I am tired of deleting them, so you may ignore the extra functions.
+I post every function I developted, but they are sometimes one-time used. I am tired of deleting them, so you may ignore the extra functions. I am also too lazy to write README for every function I wrote. I will do it at request by Wechat/email/Slack.
 
 I recommend download the scripts in a single folder, so add `export SCRIPT=/path/to/scripts` in your ~/.bashrc or ~/.bash_profile files.
 
@@ -25,12 +25,19 @@ If you want to make your own template, it is very easy. Just edit INCAR_template
 
 `python $SCRIPT/op_bs_dos.py` for submit a job to calculate density of states
 `python $SCRIPT/draw_dos1_element.py` can plot the density of state plot
+`python $SCRIPT/update_edit_incar.py` can update the INCAR file to the newest format
+`python $SCRIPT/update_edit_incar.py mode`: please read the file itself. It contains many modes to fit in different situations. 
+For example, if you want to change one tag for many directories. Create a mode in the update_edit_incar.py file, and run this command.
 
-
+# usage for specific functions
+## defect
 `python $SCRIPT/draw_KS1_insideBG.py` draws the Kohn-Sham(KS) states within band gap. It is ususally useful to plot defect KS states.
+## phonon
+
+## electronic structure by Boltztrap
 
 
-## file types
+# file types
 class*.py (files starting with class): module files to be imported/used in other files
 
   class0_functions1,2,3.py: small functions
@@ -50,41 +57,21 @@ class*.py (files starting with class): module files to be imported/used in other
   class0_incar.py: a function write INCAR file with detailed comments.
 
 
+op*.py (files starting with op): often used to create a subdirectory for some functions
 
-# generate file descriptions. Generate supercells like POSCAR, INCAR, KPOINTS for various defects
-# usage: calling at vasp-job directories. e.g. python $SCRIPT/generate_supercell.py
-generate_supercell.py  # establish supercells
-
-# intermediate(inter) file descriptions. Edit or modify vasp files based on specific requirements, not submitting jobs.
-# usage: calling at vasp-job directories. e.g. python $SCRIPT/inter_supercell.py
-inter_defect_update.sh #  change DEFECT with some specific functions
+  op_bs_dos.py: density of states (dos) calculations. Assume the current directory has a self-consistent output WAVECAR and CHGCAR, create a subdirectory called "dos_non-self", edit the INCAR in "dos_non-self" for dos calculations.
 
 
-# update file descriptions. update or edit input files 
-# usage: calling at vasp-job directories e.g. python $SCRIPT/update_edit_incar.py
-update_edit_incar.py
-update_edit_incar.py
+out*.py (files starting with out): generate useful information from VASP output file
+
+  out_draw.py: draw data. Rotate over many folders to read data, and then get the plot information.
+
+  out_formH.py: output the formation enthalpy for a single folder
+
+  out_table_band.py: generate a latex table with bandgap information
 
 
-# operation(op) file descriptions. Submit jobs to calculate something
-# usage: calling at vasp-job directories. e.g. python $SCRIPT/op_draw.py
-op_var_test.py: vary a variable in an input file and run simulations
-op_bs_dos.py: do non-self-consistent simulations to compute density of states (DOS) and band structure (BS)
-op_draw.py: draw graphs for a variable, DOS
-op_table_band.py: output a latex table with band information
-op_formH.py: output formation enthalpy
+draw*.py: rigorously these files should belong to out*.py, but draw*.py are too many, so I decided to have a new starting string. draw*.py have to draw a diagram, and out*.py has some ouputs other than a diagram.
 
 
-# output file descriptions. Output file data
-out_draw.py: draw data. Rotate over many folders to read data, and then get the plot information.
-out_formH.py: output the formation enthalpy for a single folder
-out_table_band.py: generate a latex table with bandgap information
-
-
-# draw plots. Save data in 'savedDATA' folder
-extract-bandStructure.py: 2nd step of BS drawing
-draw_var.py
-
-
-# energyf drawing. It should be contained in draw_ files, but it may contain too many different materials -> a separate file format might be neater.
-energyf_wbeo_native.py
+energyf*.py: plot formation energy diagrams. Please refer to another repository (chenyubi14/easy_defect_formation_energy). It should be contained in draw_ files, but it may contain too many different materials -> a separate file format might be neater.
