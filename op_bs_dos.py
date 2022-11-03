@@ -14,7 +14,7 @@ from class3_smaller_folders import smaller_one_folder
 
 # Non-self consistent calculations to draw DOS or band structure
 submit = 0 # 0 for don't submit, 1 for SUBMIT, 2 for SUBMITLARGE, 3 for SUBMITOLD, 4 for SUBMITUNIT
-bs_dos = 0 # 0 for band structure, 1 for DOS and PDOS
+bs_dos = 1 # 0 for band structure, 1 for DOS and PDOS
 pwd = os.environ['PWD'] + '/' # current working directory
 
 if bs_dos == 0:
