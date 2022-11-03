@@ -19,7 +19,7 @@ I have a special INCAR format. You may look at INCAR_template for an example. Th
 
 (2) You will have a way to edit INCAR easily, as provided by my code.
 
-If you want to make your own template, it is very easy. Just edit INCAR_template, and run `python incar_generate.py`, so the file class0_incar.py, which stores INCAR tags with comments, will be updated with new formats. Remember to not use `=` randomly, because incar_generate.py uses `=` to identify a tag.
+If you want to make your own template, it is very easy. Just edit INCAR_template, and run `python incar_generate.py`, so the file class0_incar.py storing INCAR comments will be updated with new formats following INCAR_template. Remember to not use `=` in INCAR_template randomly, because incar_generate.py uses `=` to identify a tag.
 
 # frequently used functions and commands
 
@@ -33,8 +33,7 @@ If you want to make your own template, it is very easy. Just edit INCAR_template
 For example, if you want to change one tag for many directories. Create a mode in the update_edit_incar.py file, and run this command.
 
 # usage for specific functions
-## defect
-`python $SCRIPT/draw_KS1_insideBG.py` draws the Kohn-Sham(KS) states within band gap. It is ususally useful to plot defect KS states.
+
 ## phonon calculations 
 You have to download phonopy (https://phonopy.github.io/phonopy/), third_order (https://bitbucket.org/sousaw/thirdorder/src/master/), ShengBTE (https://www.shengbte.org/)
 
@@ -55,6 +54,8 @@ You have to download Boltztrap (https://gitlab.com/sousaw/BoltzTraP2).
 
 `python $SCRIPT/fermi_*`: these files are just using the functions in the pymatgen (https://pymatgen.org/pymatgen.electronic_structure.boltztrap2.html)
 
+## defect
+`python $SCRIPT/draw_KS1_insideBG.py` draws the Kohn-Sham(KS) states within band gap. It is ususally useful to plot defect KS states.
 
 # file types
 
