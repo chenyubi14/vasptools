@@ -1,7 +1,7 @@
 - 👋 Hi, I’m @chenyubi14
-- 👀 I’m interested in first-principles techniques to model structure and behavior of semiconductors, oxides, and quantum material.
-- 🌱 I’m currently learning VASP to do density function theory.
-- 📫 How to reach me: email me at chenyubi14@gmail.com
+- 👀 My expertise are VASP, shell, python. I mainly work on first-principles calculations, espectially phonon, thermal transport, defect calculations, etc.
+- 🌱 You may find jobkit useful because it provides my tips for running jobs smoothly. The vasptools is useful only if you use VASP.
+- 📫 How to reach me: post an issue on github. I don't want to get emails.
 
 <!---
 chenyubi14/chenyubi14 is a ✨ special ✨ repository because its `README.md` (this file) appears on your GitHub profile.
