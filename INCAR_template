@@ -1,0 +1,143 @@
+SYSTEM=bulk	# Title
+
+#  (Re)start parameters:
+# ISTART=1	# read WAVECAR?: 0-no begin from scratch, 1-yes restart with ionstant energy cutoff and Orbitals are read from WAVECAR, 2-yes constant basis, Use 0 (if no WAVECAR) or 1 (If have WAVECAR to save time)
+# ICHARG=1	# how VASP constructs the initial charge density. Read CHGCAR?: 2-no if ISTART=0 (superpositions of atomic charge densities), 0-no (Calculate charge density from initial wave function in WAVECAR), 1-yes,read and extropolate from old positions (on CHGCAR) to new positions using linear combination of charge densities, self-consistent calculations, 11-yes, non-self-consisitent calculations. Charge density will be kept constant during the whole electronic minimization. To obtain the eigenvalues (for band structure plots) or the DOS for a given charge density read from CHGCAR. The selfconsistent CHGCAR file must be determined beforehand doing by a fully self-consistent calculation with a k-point grid spanning the entire Brillouin zone.
+
+#  Parallelization
+# KPAR=4	# number of k-points that are to be treated in parallel
+# NCORE=4	# number of compute cores that work on an individual orbital: NCORE =number-of-cores / NPAR
+# NPAR=8	# number of nodes for IALGO=48, otherwise 1
+# LPLANE=F	# by plane data distribution (FFT), set to true if neywork is slow
+# LSCALU=F	# whether LU decomposition is done in parallel
+
+#  Accuracy
+# EDIFF=0.00001	# convergence condition
+# EDIFFG=-0.01	# negative: force convergence condition
+# ENCUT=600	# specifies the cutoff energy for the planewave basis set in eV.
+# PREC=Accurate	# Low | Normal | Single | Accurate 
+# ADDGRID =T	# whether grid for augmentation charges should have 8 times more grid points that NG(X,Y,x)F grid. For accurate calcualtions use TRUE
+# LMAXMIX =4	# l quantum number up to whcih onsite PAW charge densities are passsed through the charge density mixer and written to WAVECAR (for LDA+U use 4 for d systems and 6 for f systems)
+
+# Electronic Steps
+# NELECT=473	# total number of electrons
+# NELM=160	# max number of electronic steps
+# NELMIN=5	# forces min number (=NELMIN) of electronic steps (increase for relaxation: 5 for inaccurate relaxation, 8 for accurate) to guarantee that the forces are well converged at each step
+# NELMDL =-5	# number of eectronic steps at the beginning of the first ionic relazation for which charge density is not upated (absolute value of course) 
+
+#  Ionic steps
+# NSW=200	# number of ionic steps
+# ISIF=3	# determines whether the stress tensor is calculated and which degrees-of-freedom (ionic positions, cell volume, and cell shape) are allowed to change.. what to relax?, find stress tensor?: 0 (for IBRION=0 molecular dynamics) only ions,no, 1 only ions can move, only trace, 2 only ions, fix shape and volume, used for defect calculation, yes, 3 ions,shape,vol, used in relaxation to find ground state energy, yes, 4 ions,shape, yes, 5 shape,yes, 6 shape,vol,yes, 7 vol can, not shape nor, yes
+# IBRION=2	# how the ions are updated and moved: -1 ions fixed (NSW>0 does not make much sense), 0-molecular dynamics Verlet algorithm (only constant volume MD's are possible), 1 ion relaxation (quasi-Newton algorithm, relax the ions into their instantaneous groundstate, fails badly if the initial positions are a bad guess, use IBRION=2 for this case), 2 ion relaxation (conjugate gradient algorithm), 3 ion relaxation (damped molecular dynamics, damping factor set by SMASS), 5 Gamma point phonons
+# POTIM=0.5	# scalling factor for forces if relaxation is done, time step (fs) for MD,for IBRION=5 step size for displacement of ions in froze phonon calcualtions
+# IWAVPR=1	# predition, how orbitals/densities are extrapolated from one ionic configuration to the next configuration: 0-static no prediction, 1-charge, 2-wave, 3-Comb
+# LCORR=T	# calculate Harris-correction to forces
+
+# BZ integration
+# ISMEAR=0	# how partial occupancies are found: N > 0 use the method N-order Methfessel-Paxton; 0 Gaussian(sigma), -1 Fermi(sigma), -2 partial occupancies are read in from the WAVECAR or INCAR file, and kept fixed throughout run, -5 tetrahedron with corrections
+# SIGMA=0.05	# broadening width [eV] 
+
+
+# HSE setting  
+# KSPACING=0.30	#
+# GGA=HSE06	#
+# LHFCALC=.TRUE.	# HF type calculations are performed 
+# HFSCREEN=0.2	# truncate the long range Fock potential
+# ALGO=Normal # Default:Normal. specify the electronic minimisation algorithm.  Damped|All|Normal|Exact|Fast  !Normal uses blocked Davidson iteration scheme !Exact for Exact Diagonalization !Damped for metal & small-gap semiconductors !All selects an all band simultaneous update of orbitals !Fast selects a faily robust mixture of the Davidson and RMM-DIIS algorithms.
+# TIME=0.4	#
+# NKPED=2	#
+# PRECFOCK=Fast	#
+# AEXX=0.32	#
+# AGGAX=0.675	#
+# AGGAC=1.0	#
+# ALDAC=1.0	#
+
+
+# Zero field splitting
+# LDMATRIX=True # Will give D matrix: Spin-spin contribution to zero-field splitting tensor (MHz). not documented anywhere
+
+# Hyperfine parameter
+# LHYPERFINE = .TRUE. #  compute the hyperfine tensors at the atomic sites. The total Fermi contact term is given by Atot. Beware: for the moment we have chosen NOT to include the core contributions A1c in Atot. If you so want, you should add them by hand to Atot.
+# NGYROMAG = gamma_1  gamma_2 ... gamma_N # specify nuclear gyromagnetic ratios. Need to read which nuclear isotope is used in experiment, use the gamma for that isotope. Specify one number for each of the N species on the POSCAR file. If not set NGYROMAG in the INCAR file, VASP assumes a factor of 1 for each species.
+
+#  Magnetic (Non-collinear) calculaton:
+# ISPIN=1	# Magnetism: 1 nonmagnetic, 2 magnetic and PROCAR contains a second set of projections for the spin down channel.
+# MAGMOM=2	# -5 5 -5 5 -5 5 -5 5 -5 5 -5 18*0;   initial magnetic moment ( for noncollinear three componens of magnetic moment)for each atom (order as in POSCAR);
+# VOSKOWN=1	# Vosko's interpolation for the exchange correlation potential
+# NUPDOWN=-1	# -1:not set   ;;  fixed spin moment
+# LNONCOLLINEAR=T	# noncollinear magnetism
+# LSORBIT=T	# spin-orbit coupling
+# SAXIS=0 0 1	# spin quantization axis
+# LORBMOM=T	# whether the orbital moments are written out or not. must have LSORBIT=T
+
+# dielectric constant calculation: # PEAD (Perturbation Expression After Discretization): determine the ground state of an insulating system under the application of a finite homogeneous electric field
+# LPEAD=.False.	#As an alternative to solving a linear Sternheimer equation (one method to calculate displacements, I think), one may compute the derivative of the cell-periodic part of the orbitals w.r.t. k  from finite differences by specifying LPEAD=.TRUE.
+# LEPSILON=.TRUE.	# determines the static matrix, does not support HSE
+# LOPTICS=.TRUE.	# computes frequency dependent dielectric matrix after the ground state has been determined
+# CSHIFT=0.1	# CSHIFT=0.1 by default in linear response calculations, and otherwise in GW. CSHIFT sets the (small) complex shift η in the Kramers-Kronig transformation. If the gap is very small (i.e. approaching two times CSHIFT), slight inaccuracies in the static dielectric constant are possible, which can be remedied by decreasing CSHIFT. If CSHIFT is further decreased, it is strongly recommended to increase the parameter NEDOS to values around 2000.
+# LCALCEPS=.TRUE.	# the macroscopic ion-clamped static dielectric tensor, Born effective charge tensors, and the ion-clamped piezoelectric tensor of the system are determined from the reponse to finite electric fields
+
+# Constrained occupation calculation: #set ISMEAR:-2 
+# FERWE=300*1.0 1*1.0 1*1.0 1*1.0 999*0.0	# FERWE sets the occupancies of the states in the up-spin channel.the left number is the number of states to be filled with the right number which is the occupation, so in both spin up and spin down, we fill the first 300 bands with 1 electron (the valence band).. in spin up, we then fill the next 3 states with 1 electron each, in spin down, we only put one electron in the middle state (corresponding to lifting the one down electron up one level).. then we have 999 empty bands (the conduction band) #300 is probably not the right number, you should figure this out from your EIGENVAL file, 999 is probably also not right, but VASP does not care if there are more empty bands than are necessary
+# FERDO=300*1.0 1*0.0 1*1.0 1*0.0 999*0.0	# FERDO sets the occupancies of the states in the down-spin channel for ISMEAR:-2 and ISPIN:2. Start by using ALGO: Normal, if this fails, try ALGO: All, if this fails, try ALGO: Damped,
+
+# Electronic part
+# IALGO=38	# Hamiltonian diagonalisation algorithm: 8 conjugate gradient, 38 Davidson scheme, 48 residual minimization
+# NSIM=4	# number of bands that are optimized at the same time for IALGO=48
+# LDIAG=T	#sub-space diagonalisation
+# NBANDS=160	# number of bands
+# LREAL=Auto	# whether scalar product of projectros and the wavefunctions is evaluated in real space (as opposed to k-space) (.F. for small systems; AUTO for large).
+
+
+# Symmetry
+# ISYM=-1	# symmetry: -1 the use of symmetry is switched off completely, 0-NO,reduces the sampling of the Brillouin zone compared to -1, should be set for molecular dynamics, i.e. IBRION=0., 1-yes, 2-yes efficiently
+# SYMPREC=1E-3	# 1E-5 is default. Determines how accurately the positions in the POSCAR file must be specified
+
+# DOS calcualtions: DOSCAR
+# NEDOS=1001	# number of energies for DOS
+# EMIN=-7.0	# min energy [eV] for DOS
+# EMAX=12.0	# max energy [eV] for DOS
+# RWIGS=[real array]	# Wigner-Seitz radii, one for each type of atom (order as in POSCAR), if provided partial DOS and l- and site- projected wavefunctions are calcualted.
+
+#  Which files to be written
+# LWAVE=F	# print WAVECAR, True by default
+# LCHARG=F	# print CHGCAR, True by default
+# LVTOT=T	# print LOCPOT: plot both Hartree and exchange correlation. TOT means total.
+# LVHAR=.TRUE.	# print LOCPOT (electrostatic potential). The term HAR means only hartree fock term. Used for Freysoldt correction.
+# LORBIT=11	# print PROCAR or PROOUT. Project charge density onto each atom. 11: project onto spherical harmonics, generate lm-dependent PROCAR; whether to produce lm (angular momentum quantum number) resolved DOSCAR, PORCAR, PROOUT files (see manual); # Set ISPIN:2 for separate spin projections. PROCAR contains a second set of projections for the spin down channel
+# LPARD=.TRUE.	# print PARCHG. True: evaluate partial charge densities. Orbitals read from WAVECAR must be converged in a separate prior run. Need NSW:0, IBRION:-1, ISTART:1, LPARD:.True., IBAND:457 
+# IBAND=11 12	# For PARCHG. Specify the band for viewing partial charge densities. 
+# LSEPB=.TRUE.  # For PARCHG. calculate each band separately
+
+# Electronic mixing
+# IMIX=4	# Mixing scheme: 1-Kerker, 2-Tchebycheff, 4-Broyden or Pulay (depending on WC)
+# WC=1000	# weight factor for each iterative step (only for IMIX=4): >0-Pullay; 0-Broyden
+# INIMIX=1	# Type of initial mixing (only for IMIX=4): onic mixing, 0-linear(AMIX); 1-Kerker(AMIX,BMIX)
+# AMIN=0.1	# Minimal mixing parameter
+# AMIX=0.4	# Linear mixing parameter 
+# BMIX=1	# cutoff wavevector for Kerker method
+# AMIX_MAG=1.6	# linear mixing paramter for mixing magneitzation density
+# BMIX_MAG=1.0	# Kerker wavevector cutoff fot magnetization denisty mixing
+
+# LDA+U calculation:
+# LDAU=T	# flag
+# LDAUTYPE=2	# LDA+U type: 1 Liechtenstein,  2-spherically averaged (Dudarev)
+# LDAUL=2 2 -1	# orbitals: -1 no, 0 s, 1 p, 2 d, 3 f(vasp.4.6 only) for each species
+# LDAUU=1.73 4.0 0.0	# values of U for each species
+# LDAUJ=0.70 0.58 0.0	# values of J for each species
+# LDAUPRINT=2	# 
+# LASPH=T	# Logical ASPHerical: .TRUE.-nonspherical contributions from the gradient corrections inside the PAW spheres will be included
+
+# Berry phase calculation:
+# LBERRY=F	# flag
+# IGPAR=3	# direction of integration in the reciprocal unit cell (1-3)
+# NPPSTR=6	# number of points in this direction
+# DIPOL=0.25 0.25 0.25	# cell center
+
+# Elastic band method
+# IMAGES=1	# number of images
+# SPRING=-5	# spring constant (ansolute value of course)r(AMIX); 1-Kerker(AMIX,BMIX)
+# LCLIMB=.TRUE.	# the climbing image algorithm, a more accurate method of finding the saddle points
+# ICHAIN=0	# Indicates which method to run. NEB (ICHAIN=0) is the default
+# IOPT=3	# optimizer: 0-default VASP optimizers specified from IBRION, 1-LBFGS limited-memory Broyden-Fletcher-Goldfarb-Shanno, 2-conjugate gradient, 3-Quick-Min, 4-steepest descent, 7-fast inertial relaxation engine
+
