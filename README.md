@@ -8,7 +8,7 @@ chenyubi14/chenyubi14 is a ✨ special ✨ repository because its `README.md` (t
 You can click the Preview link to take a look at your changes.
 --->
 
-I post every function I developted, but they are sometimes one-time used. I am tired of deleting them, so you may ignore the extra functions. I am also too lazy to write README for every function I wrote. I will do it at request by Wechat/email/Slack.
+I post every function I developed, but they are sometimes one-time used. I am tired of deleting them, so you may ignore the extra functions. I am also too lazy to write README for every function I wrote. I will do it at request by Wechat/email/Slack.
 
 I recommend download the scripts in a single folder, so add `export SCRIPT=/path/to/scripts` in your ~/.bashrc or ~/.bash_profile files. `pymatgen` needs to be installed, along with many other python packages.
 
