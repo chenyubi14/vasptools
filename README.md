@@ -7,3 +7,5 @@
 chenyubi14/chenyubi14 is a ✨ special ✨ repository because its `README.md` (this file) appears on your GitHub profile.
 You can click the Preview link to take a look at your changes.
 --->
+
+I post every function I developted, but they are sometimes one-time used. I am tired of deleting them, so you may ignore the extra functions.
