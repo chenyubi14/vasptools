@@ -38,7 +38,8 @@ For example, if you want to change one tag for many directories. Create a mode i
 
 
 # file types
-class*.py (files starting with class): module files to be imported/used in other files
+##class*.py 
+(files starting with class): module files to be imported/used in other files
 
   class0_functions1,2,3.py: small functions
 
@@ -57,12 +58,12 @@ class*.py (files starting with class): module files to be imported/used in other
   class0_incar.py: a function write INCAR file with detailed comments.
 
 
-op*.py (files starting with op): often used to create a subdirectory for some functions
+##op*.py (files starting with op): often used to create a subdirectory for some functions
 
   op_bs_dos.py: density of states (dos) calculations. Assume the current directory has a self-consistent output WAVECAR and CHGCAR, create a subdirectory called "dos_non-self", edit the INCAR in "dos_non-self" for dos calculations.
 
 
-out*.py (files starting with out): generate useful information from VASP output file
+##out*.py (files starting with out): generate useful information from VASP output file
 
   out_draw.py: draw data. Rotate over many folders to read data, and then get the plot information.
 
@@ -71,7 +72,7 @@ out*.py (files starting with out): generate useful information from VASP output 
   out_table_band.py: generate a latex table with bandgap information
 
 
-draw*.py: rigorously these files should belong to out*.py, but draw*.py are too many, so I decided to have a new starting string. draw*.py have to draw a diagram, and out*.py has some ouputs other than a diagram.
+##draw*.py: rigorously these files should belong to out*.py, but draw*.py are too many, so I decided to have a new starting string. draw*.py have to draw a diagram, and out*.py has some ouputs other than a diagram.
 
 
-energyf*.py: plot formation energy diagrams. Please refer to another repository (chenyubi14/easy_defect_formation_energy). It should be contained in draw_ files, but it may contain too many different materials -> a separate file format might be neater.
+##energyf*.py: plot formation energy diagrams. Please refer to another repository (chenyubi14/easy_defect_formation_energy). It should be contained in draw_ files, but it may contain too many different materials -> a separate file format might be neater.
