@@ -10,7 +10,7 @@ pwd = os.environ['PWD'] + '/'
 sys.path.append(os.environ['SCRIPT'])
 from class2_update_input import change_input_files
 from class0_functions1 import pythonsubmit, read_incar
-from class0_functions3 import write_DEFECT
+from class0_functions3 import write_INFO
 
 # Use this file for configuration coordinate diagram
 # Use draw_nonrad1_cc_diagram for plotting its result.
@@ -90,33 +90,20 @@ def create_jobs(pmg_stru, subfolname, subfol_files, submit,displacements):
         os.mkdir(str(working_dir))
         # write structure and copy necessary input files
         struct.to(filename=str(working_dir / 'POSCAR'), fmt='poscar')
-        for f in ['KPOINTS', 'POTCAR', 'INCAR', 'submit.job', 'DEFECT', 'WAVECAR']:
+        for f in ['KPOINTS', 'POTCAR', 'INCAR', 'submit.job', 'SAVEINFO', 'WAVECAR']:
             copyfile(str(subfol_files / f), str(working_dir / f))
         print('edit INCAR to remove NSW in %s' % (working_dir))
         working_dir = pwd / working_dir
         os.chdir(working_dir)
         change_files=change_input_files(str(working_dir))
         change_files.incar_change({'NELM':200,'ISTART':1,'ICHARG':0},popkey=['NSW']) # remove NSW and edit INCAR
-        defect_dictionary=read_incar(working_dir,incar='DEFECT')
+        defect_dictionary=read_incar(working_dir,incar='SAVEINFO')
         defect_dictionary['DISPLACEMENT'] = '%s' % (round(displacements[i],3))
-        write_DEFECT(str(working_dir), defect_dictionary)
-        #os.system('echo DISPLACEMENT=%s >> DEFECT'%(round(displacements[i],3))) # this does not remove the previous DISPLACEMENT argument
-        os.system('chmod +x DEFECT KPOINTS POTCAR POSCAR INCAR')
+        write_INFO(defect_dictionary, str(working_dir))
+        os.system('chmod u+x SAVEINFO KPOINTS POTCAR POSCAR INCAR')
         pythonsubmit(str(working_dir), submit)
         os.chdir(pwd)
 
 create_jobs(ground, 'ground', ground_files, submit, displacements)
 create_jobs(excited, 'excited', excited_files, submit, displacements)
 
-#for i, struct in enumerate(excited):
-#    working_dir = cc_dir / 'excited' / str(i)
-#    os.mkdir(str(working_dir))
-#    # write structure and copy necessary input files
-#    struct.to(filename=str(working_dir / 'POSCAR'), fmt='poscar')
-#    for f in ['KPOINTS', 'POTCAR', 'INCAR', 'submit.job']:
-#        copyfile(str(excited_files / f), str(working_dir / f))
-#    os.chdir(working_dir)
-#    print('edit INCAR to remove NSW in %s' % (cc_dir / 'ground' / str(i)))
-#    change_files=change_input_files(pwd)
-#    change_files.incar_change({},popkey=['NSW'])
-#    os.chdir(pwd)

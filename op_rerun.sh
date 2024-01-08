@@ -1,80 +1,56 @@
+#!/bin/sh
 # three steps: use CONTCAR, clean files, update INCAR to use WAVECAR
 
 mypwd=${PWD}
 source ~/.myshrc
 cd $mypwd
 
-function cleanfiles(){
-    # prepare folder files
-    if [ -e vasprun.xml ]; then
-        echo 'replace POSCAR with CONTCAR, and clean output'
+function changefiles(){
+	num=$1
+	cp OUTCAR OUTCAR.$num
+	cp INCAR INCAR.$num
+	cp vasprun.xml vasprun.xml.$num
+    if [ -s CONTCAR ]; then
         cp CONTCAR POSCAR
-        rm CHG DOSCAR EIGENVAL IBZKPT LOCPOT OSZICAR OUTCAR PCDAT REPORT XDATCAR *.out vasprun.xml
+        echo 'CONTCAR copied'
     else
-        echo 'The current folder is cleaned already '
+        echo 'CONTCAR not copied'
     fi
 }
 
-function updateincar(){
-    python ${SCRIPT}/update_edit_incar.py copy #change3 symprec
-    echo 'update INCAR to use WAVECAR, CHGCAR'
-}
 
-function rerun() {
-    # run folder job
-    if [ $1 == default ];then
-        vasprun
-        #echo 'default'
-    else
-        vasprun $1 # short/old/unit/large/local
-        #echo 'other'
-    fi
-    echo 'Rerun jobs at the current folder'
-}
-
-function vtst_update() {
-	# rerun vtst
-	for f in *
-	do 
-		if [[  $f == 0* && -d $f && -s $f/CONTCAR  ]] ; then # find folders
-			cp $f/CONTCAR $f/POSCAR
-		fi
-	done
-}
-
-#rm -r dielec_eps
 if [ -z $1 ];then
-    echo -e "Rerun jobs: use CONTCAR, edit INCAR (selective), clean files. \n\t\$1=default/short/old/unit/large/local, as the argument of vasprun "
-    echo -e "\tenter \$2=special for not updating INCAR"
-    echo -e "\n\tIf enter neb: will use the local bindary (assumed vtst)"
-    echo -e "\n\n For rerunning defect_ jobs, use NUPDOWN!! "
-    exit
-fi
-
-
-if [ $1 == neb ];then
-	vtst_update
-    updateincar
-    echo 'submit local (or NEB)'
-    vasprun local
-    exit
-elif [[ $1 == default || $1 == short || $1 == old || $1 == unit || $1 == large || $1 == local ]] ; then
-	echo 'Will submit by: vasprun ' $1
-    # don't exit, continue to the rest of steps
-else
-	echo 'argument not recognized'
+	echo 'should enter a number!'
+	echo 'will cp OUTCAR/INCAR to *.number'
+	echo 'can enter another arguement for (1) using ../INCAR (2) cancel job (3) submit local'
 	exit
+	#number=$1
+else
+	echo 'copy OUTCAR, INCAR, vasprun.xml'
 fi
 
-#(1): clean files
-cleanfiles
-#(2): update INCAR to use WAVECAR. 
-# only when $2=special, don't want to update INCAR
-if [ -z $2 ] || [ $2 != special ];then
-    updateincar
+changefiles $1
+
+if [ -z $2 ]; then
+	echo 'can enter another arguement for (1) using ../INCAR (2) cancel job (3) submit local'
 else
-    echo 'not update INCAR, probably want from scratch again'
-fi 
-#(3): submit job
-rerun $1 # send arguments this way!!
+	#cp ../INCAR .
+	jobid=( $( cat job.number ) )
+	jobid=${jobid[-1]}
+	found=$( ls pod* | grep $jobid )
+	if [ -z $found ]; then
+		echo 'not found jobid ' $jobid ', new job waiting'
+	else
+		echo -e 'found jobid, scancel' $jobid ', submit a new job \n'
+		scancel $jobid
+		run local
+	fi
+	#if [[ *{$jobid}* == pod*  ]]; then 
+	#	echo new job submited; 
+	#else 
+	#	echo cancel job $jobid, submit a new job
+	#	scancel $jobid
+	#	run local
+	#fi
+fi
 

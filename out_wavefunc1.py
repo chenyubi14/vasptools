@@ -13,19 +13,20 @@ sys.path.append(os.environ['SCRIPT'])
 
 print('Will generate the colored CHGCAR for the wavefunction of a kpoint, a band, and a spin.\nUse Vesta to visualize')
 if len(sys.argv)>=4:
-	ikpoint=int(sys.argv[1]) # integer value of kpoint
-	iband=int(sys.argv[2])-1 # integer value of band (pymatgen will read EIGENVAL_band_index-1 )
-	spinupdown=int(sys.argv[3]) # integer value spin up or down
+    ikpoint=int(sys.argv[1]) # integer value of kpoint
+    spinupdown=int(sys.argv[2]) # integer value spin up or down
+    #iband=int(sys.argv[3])-1 # integer value of band (pymatgen will read EIGENVAL_band_index-1 )
+    bands = sys.argv[3:]
+    bands = np.array(bands).astype(int) - 1
 else:
-	print('Error! Enter kpoint (=0,1,..), band number (=EIGENVALUE band), spin up(=0) or down(=1)')
+	print('Error! Enter kpoint (=0,1,..), spin up=0/down=1, band numbers (=EIGENVALUE band)  1 2 3 4')
 	sys.exit()
 
 wv = Wavecar(filename='WAVECAR')
 stru = Structure.from_file('CONTCAR')
 pos = Poscar(stru)
-parchg=wv.get_parchg(pos,kpoint=ikpoint,band=iband,spin=spinupdown,phase=True)
-
-plotname='k%sband%sspin%s.CHGCAR.vasp' % (ikpoint,iband+1,spinupdown)
-parchg.write_file(plotname)
-
-print('Generate: %s'% plotname)
+for iband in bands:
+    parchg=wv.get_parchg(pos,kpoint=ikpoint,band=iband,spin=spinupdown,phase=True)
+    plotname='k%sband%sspin%s.CHGCAR.vasp' % (ikpoint,iband+1,spinupdown)
+    parchg.write_file(plotname)
+    print('Generate: %s'% plotname)
