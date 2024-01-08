@@ -6,7 +6,7 @@
 
 # -n string: True if the length of "STRING" is non-zero.
 if [[ ! -n "$1" ]] ; then
-    POTDIR=${HOME}'/repo/peudopotentials/PBE'
+    POTDIR=${HOME}'/repo/pseudopotentials/PBE'
 else
     POTDIR=$1
 fi 
@@ -16,20 +16,40 @@ if [[ ! -s POSCAR ]] ; then
     exit
 fi
 # procede if POSCAR exist and POSCAR has size > 0
-for i in `sed -ne 6p POSCAR` ; do
-    FILE=$POTDIR/$i/POTCAR
-    if [[ ! $FILE ]] ; then
-	echo "ERROR: could not find $FILE"
-	echo "Usage: `basename $0` path-to-POTCAR.atom files (default: ..)"
-	exit
-    fi
-done
-
 rm -f POTCAR
-for i in `sed -ne 6p POSCAR` ; do
-    FILE=$POTDIR/$i/POTCAR
-    echo "adding $FILE"
-    cat $FILE >> POTCAR
-done
-chmod +x POTCAR
-echo "done writing new POTCAR"
+if [[ ! -f POTCAR.spec ]]; then
+    for i in `sed -ne 6p POSCAR` ; do
+        FILE=$POTDIR/$i/POTCAR
+        if [[ ! -f $FILE ]] ; then
+            FILE=$POTDIR/${i}_sv/POTCAR
+            if [[ ! -f $FILE ]]; then
+                echo "ERROR: could not find $FILE"
+                echo "Usage: `basename $0` path-to-POTCAR.atom files (default: ..)"
+                exit
+            fi
+        fi
+        echo "adding $FILE"
+        cat $FILE >> POTCAR
+    done
+else
+    echo 'found POTCAR.spec, note the last line is separately handled'
+    cp POTCAR.spec POTCAR.spec.save
+    echo -e '\t' >> POTCAR.spec.save
+    cat POTCAR.spec.save | while read ll; do
+        echo $ll
+        if [[ $ll ]];then
+            FILE=$POTDIR/${ll}/POTCAR
+            if [[ ! -f $FILE ]]; then
+                echo "ERROR: could not find $FILE"
+                echo "Usage: `basename $0` path-to-POTCAR.atom files (default: ..)"
+                exit
+            fi
+            echo "adding $FILE"
+            cat $FILE >> POTCAR
+        fi
+    done
+    rm POTCAR.spec.save
+fi
+
+chmod u+x POTCAR
+echo "cat ... >> POTCAR"
