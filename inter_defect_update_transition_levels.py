@@ -2,9 +2,9 @@ import sys
 import os
 sys.path.append(os.environ['SCRIPT'])
 from class0_functions1 import read_incar
-from class0_functions3 import write_DEFECT
+from class0_functions3 import write_INFO
 
-# update DEFECT
+# update DEFECT information
 # run at the 2nd-class folders 
 
 #if len(sys.argv)!=3:
@@ -12,7 +12,7 @@ from class0_functions3 import write_DEFECT
 #sys.argv[1] == 
 datatxtfile=sys.argv[1] #'wBeO_O-rich_native.txt'
 targetfolder = '.'
-defect_dict=read_incar(targetfolder, incar='DEFECT')
+defect_dict=read_incar(targetfolder, incar='SAVEINFO')
 found=0
 
 with open(datatxtfile,'r') as f:
@@ -41,4 +41,4 @@ if found ==0:
 defect_dict['TRANSITIONCHARGE'] = keywordval_1
 defect_dict['TRANSITIONFERMILEVEL'] = keywordval_2
 
-write_DEFECT(targetfolder, dictionary=defect_dict)
+write_INFO(dictionary=defect_dict, targetfolder)

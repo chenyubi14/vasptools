@@ -53,15 +53,28 @@ class read_file_values:
         energy=False
         if folder == '':
             folder = self.folder
+        else:
+            folder = str(Path(folder)) + '/'
         with open(folder+'OSZICAR', "r") as f:
             lines = f.readlines()
-        for i in range(len(lines)-1, 0, -1):
+        for i in range(len(lines)-1, -1, -1):
             ll=lines[i].split()
             if 'E0=' in ll:
                 energy = float(ll[ll.index('E0=')+1])
                 break
         assert energy!=False,'This folder might not finish calculation because OSZICAR file does not have energy.'
         return energy
+
+    def kpoints(self, first_k=True):
+        ''' read kpoint grid
+        '''
+        from pymatgen.io.vasp.inputs import Kpoints
+        grid=Kpoints.from_file(self.folder+'KPOINTS')
+        grid=grid.kpts
+        if first_k :
+            return grid[0][0]
+        else:
+            return grid[0] # [3,3,3]
 
     def bandgap(self, fullinfo=False):
         run = BSVasprun(self.folder+"vasprun.xml", parse_projected_eigen=True)
@@ -70,7 +83,7 @@ class read_file_values:
         # bs.get_direct_band_gap()
         # bs.get_direct_band_gap_dict()
         energy=np.round(bandgapinfo['energy'],6) # keyword: energy
-        print('direct bandgap=%s gap=%s'%(bandgapinfo['direct'], energy) )
+        print( 'bandgap info: %s \nvbm=%.4f\tcbm=%.4f' % (bandgapinfo, bs.get_vbm()['energy'], bs.get_cbm()['energy']) )
         if fullinfo:
             return bandgapinfo # bandgapinfo is a dictionary
         else:

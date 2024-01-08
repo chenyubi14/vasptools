@@ -34,7 +34,7 @@ if len(sys.argv) < 2:
 f1=Path(sys.argv[1])
 f2=Path(pwd)
 
-mydict=read_incar(f2,incar='DEFECT')
+mydict=read_incar(f2,incar='SAVEINFO')
 defecttype = mydict['DEFECTTYPE']
 print('defecttype=%s'%defecttype)
 
@@ -152,7 +152,7 @@ def plot_ks(ax,ksupstates,ksdownstates,maxx,maxy, defectenergyVBM,tol=0.5, initi
         plot_panel_ks(ax, ksdownstates, maxx, maxy, defectenergyVBM, tol=0.5, initial_mode=initial_mode, updown=0)
 
 #
-initial_mode=1 # see the comment at line 146
+initial_mode=2
 
 # energy of CBM and VBM in perfect supercells
 perfenergyCBM,perfenergyVBM = cbm_vbm(f1)

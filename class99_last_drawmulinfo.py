@@ -14,9 +14,9 @@ from class0_functions3 import reorder_x_y_data
 class drawmulinfo:
     def __init__(self, x_str, y_str, header, middle='', lattice_structure=None, xlim=None, ylim=None, materialcomment=''):
         # fixed info for all... the format of infodict(information dictionary) is 'keyword': ('xlabel', 'unit')
-        self.xfile_infodict = {'ENCUT': 'INCAR', 'AEXX': 'INCAR', 'HFSCREEN': 'INCAR','NELECT': 'INCAR', 'SCALING':'CONTCAR','bond_length':'POSCAR'}
-        self.xlabel_infodict = {'ENCUT':("cutoff energy", 'eV'), 'energy':('energy', 'eV'), 'AEXX':('AEXX',''), 'HFSCREEN': ('HFSCREEN', ''), 'NELECT':('number of elections',''), 'SCALING':('volume',r'$\AA^3$'),'bond_length':('bond length',r'$\AA$')}
-        self.ylabel_infodict = {'equil_energy':('final energy', 'eV'),'bandgap':('bandgap', 'eV'),'wurtzite_u':('wurtzite u parameter',''), 'lattice_para':('lattice parameter',''), 'koopmans':('$E(N-1)-E(N)+E_{corr}+\epsilon_{ho}(N)$', 'eV'), 'hoenergy':('highest occ energy','eV'), 'bond_length':('bond length',r'$\AA$')}
+        self.xfile_infodict = {'ENCUT': 'INCAR', 'SIGMA':'INCAR', 'AEXX': 'INCAR', 'HFSCREEN': 'INCAR','NELECT': 'INCAR', 'SCALING':'CONTCAR','bond_length':'POSCAR', 'grid':'KPOINTS'}
+        self.xlabel_infodict = {'ENCUT':("cutoff energy", 'eV'), 'SIGMA':('sigma','Gaussian smearing width'), 'energy':('energy', 'eV'), 'AEXX':('AEXX',''), 'HFSCREEN': ('HFSCREEN', ''), 'NELECT':('number of elections',''), 'SCALING':('volume',r'$\AA^3$'),'bond_length':('bond length',r'$\AA$'), 'grid':('kgrid','n*n*n')}
+        self.ylabel_infodict = {'equil_energy':('Final Energy', 'eV'),'bandgap':('bandgap', 'eV'),'wurtzite_u':('wurtzite u parameter',''), 'lattice_para':('lattice parameter',''), 'koopmans':('$E(N-1)-E(N)+E_{corr}+\epsilon_{ho}(N)$', 'eV'), 'hoenergy':('highest occ energy','eV'), 'bond_length':('bond length',r'$\AA$')}
         # plot info provided
         self.lattice_structure = lattice_structure
         self.scalingvolume = True # use volume for scaling or use lattice parameter for scaling
@@ -71,6 +71,9 @@ class drawmulinfo:
                 else:
                     print('Error! The variable to read for POSCAR is not prepared')
                     sys.exit()
+            elif self.x_file_open == 'KPOINTS':
+                if self.x_str == 'grid':
+                    x=read_var.kpoints()
             else:
                 print('Error! The x file you want to read is not prepared')
                 sys.exit()
@@ -109,14 +112,12 @@ class drawmulinfo:
         elif self.y_str == 'equil_energy': # energy needs to reset reference
             self.data = self.data-self.data[-1]
         elif self.x_str == 'AEXX' and self.y_str == 'bandgap': # print fitting AEXX to bandgap
-            bandgapBeOvalue=11.3
-            aexxvalue_BeOexpr = np.interp(bandgapBeOvalue, self.data, self.xx)
-            print('AEXX=%f corresponds to experimental bandgap=%feV' % (aexxvalue_BeOexpr, bandgapBeOvalue) )
-            with open( path+'savedDATA/%s_AEXX_bandgap=%.2feV' % (self.header,bandgapBeOvalue), 'w') as f:
-                f.write( 'AEXX=%f  # BeO bandgap=%feV\n' % (aexxvalue_BeOexpr, bandgapBeOvalue) )
-            #with open( path+'%s_AEXX_bandgap=%.2feV' % (self.header,bandgapBeOvalue), 'w') as f:
-            #    f.write( 'AEXX=%f  # BeO bandgap=%feV\n' % (aexxvalue_BeOexpr, bandgapBeOvalue) )
-        # print data
+            bandgap_selected_value=0.726 #11.3 for BeO
+            aexxvalue_selected = np.interp(bandgap_selected_value, self.data, self.xx)
+            print('\nAEXX=%.4f corresponds to experimental bandgap=%.5feV\n' % (aexxvalue_selected, bandgap_selected_value) )
+            with open( path+'%s_AEXX_bandgap=%.3feV' % (self.header,bandgap_selected_value), 'w') as f:
+                f.write( 'AEXX=%.4f  # bandgap=%.5feV\n' % (aexxvalue_selected, bandgap_selected_value) )
+        ## print data
         self.xx=np.round(self.xx,6)
         self.data=np.round(self.data,6)
         print('xx='+', '.join(self.xx.astype(str)))
@@ -146,6 +147,7 @@ class drawmulinfo:
                 #sub_num = num_plots * 100 + 10 + i
                 plt.subplot(num_plots, 1, i+1)
                 plt.plot(self.xx, self.data[i],'-')
+                #plt.scatter(self.xx, self.data[i],'-')
                 if i == 0:
                     plt.title('%s' % (self.title))
                 plt.ylabel(self.lattice_labels[i])
@@ -294,14 +296,14 @@ class drawmulinfo3D:
             print('The current data format is not working for multi data variables')
         elif self.z_str == 'equil_energy': # energy needs to reset reference
             self.data = self.data-self.data[-1]
-        #elif (self.x_str == 'AEXX' or ) and self.z_str == 'bandgap':
-        #    bandgapBeOvalue=11.3
-        #    #aexxvalue_BeOexpr = np.interp(bandgapBeOvalue, self.data, self.xx)
-        #    #print('AEXX=%f corresponds to experimental bandgap=%feV' % (aexxvalue_BeOexpr, bandgapBeOvalue) )
-        #    #with open( path+'savedDATA/%s_AEXX_bandgap=%.2feV' % (self.header,bandgapBeOvalue), 'w') as f:
-        #    #    f.write( 'AEXX=%f  # BeO bandgap=%feV\n' % (aexxvalue_BeOexpr, bandgapBeOvalue) )
-        #    #with open( path+'%s_AEXX_bandgap=%.2feV' % (self.header,bandgapBeOvalue), 'w') as f:
-        #    #    f.write( 'AEXX=%f  # BeO bandgap=%feV\n' % (aexxvalue_BeOexpr, bandgapBeOvalue) )
+        elif (self.x_str == 'AEXX' ) and self.z_str == 'bandgap':
+            bandgap_selected_value=0.67 #11.3
+            aexxvalue_selected = np.interp(bandgap_selected_value, self.data, self.xx)
+            print('AEXX=%f corresponds to selected bandgap=%feV' % (aexxvalue_selected, bandgap_selected_value) )
+            #with open( path+'%s_AEXX_bandgap=%.2feV' % (self.header,bandgap_selected_value), 'w') as f:
+            #    f.write( 'AEXX=%f  # BeO bandgap=%feV\n' % (aexxvalue_selected, bandgap_selected_value) )
+            #with open( path+'%s_AEXX_bandgap=%.2feV' % (self.header,bandgap_selected_value), 'w') as f:
+            #    f.write( 'AEXX=%f  # BeO bandgap=%feV\n' % (aexxvalue_selected, bandgap_selected_value) )
         # print data
         #self.xx=np.round(self.xx,6)
         #self.yy=np.round(self.yy,6)

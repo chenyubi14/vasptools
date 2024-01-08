@@ -94,10 +94,10 @@ def get_C_for_freysoldt(fil, defectcenter):
 
 
 if len(sys.argv)<4:
-        defectcenter = read_incar(path, incar='DEFECT')['CENTER']  # position of defect
+        defectcenter = read_incar(path, incar='SAVEINFO')['CENTER']  # position of defect
 else:
         defectcenter = sys.argv[3]
-#defectcenter=read_incar(path, incar='DEFECT')['CENTER']  # position of defect
+#defectcenter=read_incar(path, incar='SAVEINFO')['CENTER']  # position of defect
 print('defectcenter is at %s' % defectcenter)
 defectcenter=np.array(defectcenter.split(',')).astype(float)
 

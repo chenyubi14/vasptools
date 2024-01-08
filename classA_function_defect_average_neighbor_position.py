@@ -4,7 +4,7 @@ import numpy as np
 import pymatgen as pmg
 sys.path.append(os.environ['SCRIPT'])
 from class0_functions1 import read_incar
-from class0_functions3 import write_DEFECT
+from class0_functions3 import write_INFO
 
 # Update DEFECT CENTER by averaging over neighrbors
 # this function is embedded into 'inter_defect_update_CENTER.sh'. Don't need to call from outside.
@@ -13,7 +13,7 @@ path=os.environ['PWD']+'/'
 # Get neighbors' indices
 neighborstr='neighbor'
 posfil='CONTCAR'
-defectinfo_raw=read_incar(path, incar='DEFECT')['NLINE']
+defectinfo_raw=read_incar(path, incar='SAVEINFO')['NLINE']
 assert defectinfo_raw[:len(neighborstr)] == neighborstr, 'Not vacancy defect'
 #print('average over neighbors to get defect position')
 defectinfo=np.array(defectinfo_raw.split(' ')[1:]).astype(int)
@@ -36,9 +36,6 @@ defectposition = ','.join(defectposition)
 print('defect position by averaging neighbors: CENTER=%s'%(defectposition))
 
 # Write the information to DEFECT
-dictionary = read_incar(path, incar='DEFECT')
+dictionary = read_incar(path, incar='SAVEINFO')
 dictionary['CENTER']=defectposition+' # the position of defect center'
-write_DEFECT(path, dictionary, incarname='DEFECT' )
-#with open('DEFECT', 'w') as f:
-#    f.write('CENTER=%s # the position of defect center\n' % (defectposition)) 
-#    f.write('NLINE=%s\n'% (defectinfo_raw))
+write_INFO(dictionary, incarname='SAVEINFO' )

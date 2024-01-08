@@ -14,7 +14,7 @@ from nonrad.nonrad import AMU2KG, ANGS2M, EV2J, HBAR
 
 sys.path.append(os.environ['SCRIPT'])
 from class0_functions1 import read_incar
-from class0_functions3 import write_DEFECT
+from class0_functions3 import write_INFO 
 from class1_read import read_file_values
 
 # draw CC diagram
@@ -38,7 +38,7 @@ plt.rc('legend', fontsize=SMALL_SIZE)    # legend fontsize
 plt.rc('figure', titlesize=MEDIUM_SIZE)  # fontsize of the figure title
 
 pwd = os.environ['PWD'] + '/'
-defect_dict=read_incar(pwd, incar='DEFECT')
+defect_dict=read_incar(pwd, incar='SAVEINFO')
 comment=defect_dict['DEFECTTYPE'] # like DEFECTTYPE=$\mathit{V}_\mathrm{O}$
 comment=comment[1:len(comment)-1] # \mathit{V}_\mathrm{O}
 
@@ -122,9 +122,9 @@ def find_zpl(ground_folname,excited_folname,comment):
         # internal transitions
         dE=find_final_energy_difference(ground_folname,excited_folname)
         carriertype=''
-        defect_ground_dict=read_incar(ground_folname, incar='DEFECT')
+        defect_ground_dict=read_incar(ground_folname, incar='SAVEINFO')
         comment_ground=defect_ground_dict['COMMENT'] # COMMENT=ground triplet
-        defect_excited_dict=read_incar(excited_folname, incar='DEFECT')
+        defect_excited_dict=read_incar(excited_folname, incar='SAVEINFO')
         comment_excited=defect_excited_dict['COMMENT'] # COMMENT=excited triplet
         groundlabel='$%s^{%s}$ %s' % (comment, format_charge(ground_folname_charge), comment_ground)
         excitedlabel='$%s^{%s}$ %s' % (comment, format_charge(excited_folname_charge), comment_excited)
@@ -226,7 +226,7 @@ def get_Q_E_from_vaspruns(vasprun_paths,dQ,Lexcited): #ground_struct,
     for i, vr_fname in enumerate(vasprun_paths):
         vf_foldername=vr_fname[:-11] #'cc_-1e_-1e.constrainedInternal3/excited/0/vasprun.xml'[:-11]
         # remove 'vasprun.xml' and keep the folder name
-        dictionary=read_incar(vf_foldername,incar='DEFECT')
+        dictionary=read_incar(vf_foldername,incar='SAVEINFO')
         displacement_i = float(dictionary['DISPLACEMENT'])
         Q[i]=dQ*(displacement_i+Lexcited) # I use my own data to get dQ because Mark's code had some error
         vr=Vasprun(vr_fname,parse_dos=False,parse_eigen=False)
@@ -431,7 +431,7 @@ print('\n\n',dicti)
 #print('transitions: E_absorption=%seV, E_emission=%seV, ZPL_dE=%seV, ZPL_fitted_line=%seV, FC=ZPL-E_emission=%seV, Huang-Rhys_factor=%s, non-radiative_recombination_energetic=%s' % (absorption, emission, dE, zpl, fc_relaxation, hr_factor, NRR_energy))
 print('NRR may have two or zero crossing points. Pick the energy that is more plausible.')
 print('figure saved to %s' % figname)
-write_DEFECT(pwd,dictionary=dicti,incarname=cc_folname+'.txt')
+write_INFO(dictionary=dicti,incarname=cc_folname+'.txt')
 
 # save figure
 plt.tight_layout()

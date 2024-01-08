@@ -16,7 +16,7 @@ function calc_freysoldt_correction(){
     #echo $2 $3 $4 #$4 $7 ${this_eps[@]}
 
     # Step 0: initialize parameters
-    # update DEFECT file to get --center for freysoldt
+    # update SAVEINFO file to get --center for freysoldt
     sh ${SCRIPT}/inter_defect_update_CENTER.sh 
     sxcharge=` expr 0 - $charge ` # freysoldt charge is opposite to the defect charge
     freydir='freysoldt_correction_ref-'${ref} # freysoldt directory name
@@ -30,14 +30,14 @@ function calc_freysoldt_correction(){
         mkdir $freydir
         cp LOCPOT $freydir/defectLOCPOT
         cp ${referencedir}/LOCPOT $freydir/neutralrefLOCPOT
-        cp DEFECT $freydir # DEFECT is update to date by the first command : sh inter_defect_position.sh
+        cp SAVEINFO $freydir # SAVEINFO is update to date by the first command : sh inter_defect_position.sh
     else
         echo 'PWD does not have LOCPOT, maybe the job is not finished'
         exit 0
     fi
 
     # Step 1.2: get defect position and eps
-    defectcenter=$(cat DEFECT | sed -n '/CENTER/{s/CENTER=//;s/#.*//;p}' ) # remove keyword and remove comments #.*
+    defectcenter=$(cat SAVEINFO | sed -n '/CENTER/{s/CENTER=//;s/#.*//;p}' ) # remove keyword and remove comments #.*
 
     # Step 1.3: run freysoldt correction
     cd $freydir
@@ -61,7 +61,7 @@ function calc_freysoldt_correction(){
     freycorrenergy=$(cat sx2.fc | sed -n '/Defect correction/{s/Defect correction (eV): //;s/ (incl. screening & alignment)//;p}' )
     echo '(Step 2) finished. The freysoldt correction energy is ' $freycorrenergy
     cd ..
-    python ${SCRIPT}/update_edit_defect.py $freycorr $freycorrenergy # edit DEFECT by keyword and energy
+    python ${SCRIPT}/update_edit_defect.py $freycorr $freycorrenergy # edit SAVEINFO by keyword and energy
     echo -e '\nDOUBLE CHECK charge=' $charge ' defect=' $defecttype ' defect position=' $defectcenter '\n' 'at folder' $cwd '\n reference=' $referencedir  '\n\n'
 }
 
@@ -90,10 +90,10 @@ length_zero2=( $( echo $ZEROFOL | tr  '/', ' ' ) ) # the list (work2 07884 tg871
 length_zero2=` expr ${#length_zero2[@]} + 1 `
 FIRSTFOL=( $( echo $PWD | tr  '/', ' ' ) ) # a list with separated folder name, like (work2 07884 tg871834 stampede2 berylliumO wurtzite_91_defect_complex_VO_LiBe defect0e)
 FIRSTFOL=/$( echo ${FIRSTFOL[@]::${length_zero2}} | tr ' ' '/' ) # get /work2/07884/tg871834/stampede2/berylliumO
-# get defecttype from keyword COMMENT in DEFECT
-defecttype=$( cat DEFECT | sed -n '/DEFECTTYPE/p' | sed -e 's/mathit//g' -e 's/mathrm//g' -e 's/DEFECTTYPE=//g' -e 's/#.*//g' | tr -d '{}\\$' )
+# get defecttype from keyword COMMENT in SAVEINFO
+defecttype=$( cat SAVEINFO | sed -n '/DEFECTTYPE/p' | sed -e 's/mathit//g' -e 's/mathrm//g' -e 's/DEFECTTYPE=//g' -e 's/#.*//g' | tr -d '{}\\$' )
 if [ -z $defecttype ]; then
-    echo 'Error! DEFECTTYPE does not exist in DEFECT. Modify the DEFECT files!'
+    echo 'Error! DEFECTTYPE does not exist in SAVEINFO Modify the SAVEINFO files!'
     exit 0
 fi
 # read cutoff energy and convert it to Rydberg unit
@@ -110,14 +110,14 @@ if [ $3 == 'elec' ] ||  [ $2 = *koopmans* ]; then
     referencedir=$(echo $2 | sed -e 's/1e_/0e_/' ) # reference directory is neutral defect
     this_eps=$(python ${SCRIPT}/inter_eps_readdata.py) # interpolate eps from the AEXX/HFSCREEN for a given folder
     # this_eps=eps 2.8 will be treated as two arguments
-    # FREYCORRELEC will be the keyword written in DEFECT file
+    # FREYCORRELEC will be the keyword written in SAVEINFO file
     calc_freysoldt_correction $1 $defecttype $referencedir $ref $this_eps FREYCORRELEC $cutoffE_Ry $average # charge defecttype perfect_folder ref=defect this_eps keyword cutoff_energy
 else
     echo 'Formation energy calculation ref=bulk. Total dielectric constant is used (ionic included). '
     ref='bulk'
     this_eps=$(cat ${FIRSTFOL}/ALLINFO | sed -n '/DIELEC_CONST_ALL=/{s/DIELEC_CONST_ALL=//;p}' )  # 'sed' removes keyword DIELEC_CONST_ALL 
     # this_eps='eps 6.7' read in the file ALLINFO in FIRSTFOL with keyword DIELEC_CONST_ALL # should look like EPS=eps (value) or EPS=tensor a,b,c,0,0,0
-    # FREYCORRALL will be the keyword written in DEFECT file
+    # FREYCORRALL will be the keyword written in SAVEINFO file
     echo -e 'Total dielectric constant read from ALLINFO is' $this_eps '\n'
     calc_freysoldt_correction $1 $defecttype $3 $ref $this_eps FREYCORRALL $cutoffE_Ry $average # charge defecttype perfect_folder ref=bulk this_eps keyword cutoff_energy
 fi

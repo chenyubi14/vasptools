@@ -4,7 +4,24 @@ import shutil
 from pathlib import Path
 
 
-def find_files(direc, header='', var='', middle='', remove=True, avoid=''): # find directories related with convergence tests
+def parent_folder(string, hier=10,includepwd=True):
+    '''
+    given '/home/yubi/work/berylliumO/enthalpyf_hse/beo_w_hse/', output 1st-class ... hier_th-class directories
+    '''
+    header=str(Path(os.environ['ZEROFOL']))+'/' # os.path.expanduser("~")
+    len_header=len(header)
+    assert string[:len_header]==header, 'Wrong folder directory %s, should be under %s'%(string,header)
+    string=string[len_header:]
+    if string[-1]=='/':
+        string = string[:-1]
+    smaller_names = string.split('/')
+    if includepwd:
+        folders=[header+'/'.join(smaller_names[:i])+'/' for i in range(1,len(smaller_names)+1)]
+    folders=folders[:hier] # only pick this number of folders. Eg. hier=1, only the material directory is needed
+    return folders
+
+
+def find_files(direc, header='', var='', middle='', remove=False, avoid=''): # find directories related with convergence tests
     # return a list of directories started with header='converge_'
     '''
     header = '' means find folders without header
@@ -31,35 +48,39 @@ def read_incar(folder, allkeyword=0, incar='INCAR'):
     ''' 
     read all variables of INCAR from folder to output a dictionary
     '''
-    #if folder[-1] != '/':
-    #    folder=folder+'/' # make sure the folder has correct form: .../INCAR
-    #fil=folder+incar
     folder = Path(folder)
     fil = folder / incar
-    with open(fil, 'r') as f:
-        lines = f.readlines() # lines is a LIST, different line contents are separated with '\n' at the end
-    dictionary = {} # include keywords in comments
-    dictionary2 = {} # exclude keywords in comments
-    for i in range(len(lines)):
-        splitted=lines[i].split('=') # if contains keyword
-        if len(splitted)>1:
-            keyword=splitted[0].split('#')[-1].split()[-1] # keyword in INCAR: the changes are '#MAGMOM'->'MAGMOM' 
-            default_val=splitted[1].split('#')[0].split('!')[0] # values of keywords
-            default_val=' '.join(default_val.split()) # get rid of '\n' and undesired spaces
-            dictionary[keyword]=default_val # add to dictionary
-            if ('#' not in splitted[0]) and ('!' not in splitted[0]): # this keyword is not in comments
-                dictionary2[keyword] = default_val
-    if allkeyword:
-        return dictionary
-    else:
-        return dictionary2
+
+    dictionary = np.loadtxt(str(fil), comments=['!','#'], dtype=str,delimiter='=') # read INCAR file
+    keys= [dictionary[i,0].strip() for i in range(len(dictionary[:,0]))] # remove whitespaces in the keywords
+    values = [ dictionary[i,1].strip() for i in range(len(dictionary[:,1])) ] # remove the whitespace in the end. "r" is to strip on the right
+    dictionary = dict(zip(keys,values))
+    return dictionary
+
+    #with open(fil, 'r') as f:
+    #    lines = f.readlines() # lines is a LIST, different line contents are separated with '\n' at the end
+    #dictionary = {} # include keywords in comments
+    #dictionary2 = {} # exclude keywords in comments
+    #for i in range(len(lines)):
+    #    splitted=lines[i].split('=') # if contains keyword
+    #    if len(splitted)>1:
+    #        keyword=splitted[0].split('#')[-1].split()[-1] # keyword in INCAR: the changes are '#MAGMOM'->'MAGMOM' 
+    #        default_val=splitted[1].split('#')[0].split('!')[0] # values of keywords
+    #        default_val=' '.join(default_val.split()) # get rid of '\n' and undesired spaces
+    #        dictionary[keyword]=default_val # add to dictionary
+    #        if ('#' not in splitted[0]) and ('!' not in splitted[0]): # this keyword is not in comments
+    #            dictionary2[keyword] = default_val
+    #if allkeyword:
+    #    return dictionary
+    #else:
+    #    return dictionary2
 
 
 def pythonsubmit(folder,submit=0):
     if submit !=0:
         os.chdir(folder) # cwd: current working folder
         scriptfile=submit-1
-        testsubmit=['SUBMIT'] # testsubmit[scriptfile=0]='SUBMIT'
+        testsubmit=['SUBMIT','SUBMITLARGE','SUBMITOLD','SUBMITMANYK', 'SUBMITSHORT','SUBMITSINGLEK','SUBMITTEST'] # testsubmit[scriptfile=1]='SUBMITLARGE'
         submitjob=os.environ[testsubmit[scriptfile]]
         print('use %s' % (testsubmit[scriptfile]))
         os.system('sbatch %s > job.number' % (submitjob) )

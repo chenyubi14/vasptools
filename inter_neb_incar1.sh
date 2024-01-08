@@ -64,6 +64,6 @@ echo -e 'copied OUTCAR to 00 and' $last_img_folder
 
 # In[8]:
 # use submit.neb.job
-echo -e '\nRemember to use NEB job script! ' #(binary should end with _vtst)
+echo -e '\nRemember to use NEB VASP job script! ' #(binary should end with _vtst)
 # Stampede only has one stampede2*_vtst
 # cori has all, like gamma_sampling

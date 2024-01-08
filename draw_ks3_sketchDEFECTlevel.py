@@ -29,12 +29,12 @@ plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
 if len(sys.argv) < 2:
         print('Error! Enter the name UNIT cell folder, to obtain CBM and VBM. (supercell is not good, because sampling may affect CBM and VBM)')
         print('${WORK1}/wurtzite_00_unit/unit.AEXX0.405\n${WORK5}/wurtzite_01_bulk/aexx0.36\n${WORK4}/diamond_01_unit/primitive_aexx0.25/bs_non-self')
-        print('\n Remember to put \nSPECIFYUPDEFECTLEVEL=\nSPECIFYDOWNDEFECTLEVEL=\nSPECIFYUPCBLEVELNUM=\nSPECIFYUPVBLEVELNUM=\nSPECIFYDOWNCBLEVELNUM=\nSPECIFYDOWNVBLEVELNUM=\n and DEFECTTYPE(title) in file DEFECT')
+        print('\n Remember to put \nSPECIFYUPDEFECTLEVEL=\nSPECIFYDOWNDEFECTLEVEL=\nSPECIFYUPCBLEVELNUM=\nSPECIFYUPVBLEVELNUM=\nSPECIFYDOWNCBLEVELNUM=\nSPECIFYDOWNVBLEVELNUM=\n and DEFECTTYPE(title) in file SAVEINFO')
         sys.exit()
 f1=Path(sys.argv[1])
 f2=Path(pwd)
 
-mydict=read_incar(f2,incar='DEFECT')
+mydict=read_incar(f2,incar='SAVEINFO')
 defecttype = mydict['DEFECTTYPE']
 print('defecttype=%s'%defecttype)
 
@@ -130,14 +130,14 @@ def plot_panel_ks(ax, spin_states, maxx, maxy, defectenergyVBM, tol=0.5, initial
                         arrowratio_length=40
                         arrowratio_head_width=40
                         arrowratio_head_length=30
-                        if spin_states[i+j,1] == 1: # occupied inside gap, draw arrow and write energy
+                        if abs(spin_states[i+j,1]- 1) < 0.1: # occupied inside gap, draw arrow and write energy
                                 if updown == 1:
                                         plt.text(xx[j,0],ksenergy+maxy/20, '%.2f'%ksenergy)
                                         ax.arrow(meanx,ksenergy-maxy/arrowratio_yposition,0,maxy/arrowratio_length,head_width=maxx/arrowratio_head_width,head_length=maxy/arrowratio_head_length,color='k')
                                 else:
                                         plt.text(xx[j,0],ksenergy+maxy/30, '%.2f'%ksenergy)
                                         ax.arrow(meanx,ksenergy+maxy/arrowratio_yposition,0,-maxy/arrowratio_length,head_width=maxx/arrowratio_head_width,head_length=maxy/arrowratio_head_length,color='k')
-                        elif spin_states[i+j,1] == 0: # unccupied inside gap, write energy , don't draw arrow
+                        elif abs(spin_states[i+j,1] - 0) < 0.1: # unccupied inside gap, write energy , don't draw arrow
                                 plt.text(xx[j,0],ksenergy+maxy/100, '%.2f'%ksenergy)
                         elif spin_states[i+j,1] == 10: # inside VB, don't write energy, only draw arrows
                                 if updown == 1:

@@ -3,11 +3,6 @@ import os
 import sys
 from class0_incar import write_INCAR
 from class0_functions1 import read_incar
-from class0_functions2 import struc2poscar
-from class1_read import read_file_values
-from pymatgen.core import Structure
-import re
-import copy
 from pathlib import Path
 
 # Functions in this file edit VASP input files
@@ -38,6 +33,7 @@ class change_input_files:
             if os.path.exists(self.folder+'OUTCAR')==False:
                 print('OUTCAR not available. Reset the folder')
                 sys.exit()
+            from class1_read import read_file_values
             read_var = read_file_values(self.folder)
             nelect = read_var.outcar('NELECT')
             nelect = int(nelect - defect_charge)
@@ -48,7 +44,7 @@ class change_input_files:
         # this is the benefit of dictionaries: no need 
         write_INCAR(self.folder, new_dict)
     
-    def poscar_change(self, defects=[4,88], neighbordistance=1.7, poscar='POSCAR.perfect',remove=True, savefilname='POSCAR.defect', perturb=0.05, modelcwd=True):
+    def poscar_change(self, defects=[4,88], neighbordistance=1.7, poscar='POSCAR.perfect',remove=True, savefilname='POSCAR.defect', perturb=0.02, modelcwd=True):
         '''
         PERTURB the nearest neighbors of the defects and REMOVE defects
         defects should be an array of site indices
@@ -56,20 +52,19 @@ class change_input_files:
         '''
         assert type(defects) == list, 'The defect index should enter as a list'
         assert len(np.shape(defects))==1 , 'The defect position has a wrong format'
+        from pymatgen.core import Structure
         self.pmg_struc=Structure.from_file(self.folder+poscar) # read structure from POSCAR
         sites=self.pmg_struc.sites ## struc.sites gives all sites of this structure
-        # write the defect information in the notes.atomlabel.readme file
+        # write the defect information in the notes.readme file
         if modelcwd==False: # mode 1, copy to subfolder
-            os.system('cp ../model.notes.atomlabel.readme ./notes.atomlabel.readme')
-            os.system('cp ../model.DEFECT ./DEFECT')
+            os.system('cp ../model.notes.readme ./notes.readme')
+            os.system('cp ../model.SAVEINFO ./SAVEINFO')
         else: # mode 2, copy models to this current folder
-            os.system('cp ./model.notes.atomlabel.readme ./notes.atomlabel.readme')
-            os.system('cp ./model.DEFECT ./DEFECT')
-            #assert os.path.exists('DEFECT'), 'DEFECT should be present'
-            #assert os.path.exists('notes.atomlabel.readme'), 'notes.atomlabel.readme should be present'
-        model_notes_atom=open(self.folder+'notes.atomlabel.readme', 'a')
-        model_defect=open(self.folder+'DEFECT','a')
-        #model_defect_file=open()
+            os.system('cp ./model.notes.readme ./notes.readme')
+            os.system('cp ./model.SAVEINFO ./SAVEINFO')
+        model_notes_atom=open(self.folder+'notes.readme', 'a')
+        model_defect=open(self.folder+'SAVEINFO','a')
+        import copy
         for defectind in defects:
             defectsite = sites[defectind]
             model_notes_atom.write('The defect atom is %s%s %s. Perturbing neighbors...\n' % (defectsite.species_string, defectind, defectsite.frac_coords))
@@ -92,7 +87,7 @@ class change_input_files:
             self.pmg_struc.remove_sites(defects) # No longer perfect
             model_notes_atom.write('Neighbors of pymatgen index in perfect supercell %s\n' % (' '.join(neighborindices.astype(int).astype(str)  ) ) )
             model_notes_atom.write('Neighbors of vesta index in perfect supercell %s\n' % (' '.join( (neighborindices+1).astype(int).astype(str)  ) ) )
-            model_notes_atom.write('Neighbors by NLINE in perfect supercell %s (maybe different from NLINE in DEFECT due to removed atoms vacancy)\n' % (' '.join( (neighborindices+10).astype(int).astype(str)  ) ) )
+            model_notes_atom.write('Neighbors by NLINE in perfect supercell %s (maybe different from NLINE in SAVEINFO due to removed atoms vacancy)\n' % (' '.join( (neighborindices+10).astype(int).astype(str)  ) ) )
             neighborindices = neighborindices - 1*(defects[0]<neighborindices)
             model_defect.write('CENTER=%s\n' % (','.join( list( np.round(defectsite.frac_coords,4).astype(str) ) ) ) )
             model_defect.write('NLINE=neighbor %s\n' % (' '.join( list( (neighborindices+10).astype(int).astype(str) ) ) ) )
@@ -102,7 +97,8 @@ class change_input_files:
             model_defect.write('NLINE=%s\n' % ( self.pmg_struc.index(defectsite)+10 ) )
             model_defect.write('POSITIONNORELAX=%s\n' % (' '.join( list( np.round(old_coord,4).astype(str) ) ) ) )
         # output POSCAR in self.folder
-        struc2poscar(self.pmg_struc, self.folder, fname=savefilname)
+        from class0_functions2 import struc2poscar
+        struc2poscar(self.pmg_struc, self.folder, fname=savefilname, selective_dynamics=True)
         return defectsite, defectneighbors
 
     def contcar2poscar(self):

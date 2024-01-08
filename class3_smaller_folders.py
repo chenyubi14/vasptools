@@ -2,7 +2,6 @@ import numpy as np
 import sys
 import os
 import shutil
-from funcy import project
 
 sys.path.append(os.environ['SCRIPT'])
 from class1_read import read_file_values
@@ -121,8 +120,10 @@ class smaller_folders:
 
         # make directory names
         new_folders = []
+        num_digits = int(np.log10(divnum)) + 1
+
         for i in range(1, divnum+1): # index starts from 1. save index=0 for special cases
-            folder = header+str(i)+'_'+var
+            folder = header+  str(i).zfill(num_digits) +'_'+var
             new_folders.append(folder)
             os.mkdir(folder)
             os.system('cp INCAR KPOINTS POTCAR POSCAR ./'+folder)
@@ -132,10 +133,10 @@ class smaller_folders:
             # edit incar file in new_folder
             new_folder = self.folder+new_folders[i]
             print(new_folder)
-            changes = {var: var_list[i], 'SYSTEM':dictionary['SYSTEM']}
+            changes = {var: var_list[i], 'SYSTEM':dictionary['SYSTEM'], 'LWAVE':'F', 'LCHARG':'F'}
             changes = {**change_dict, **changes}
             change_files=change_input_files(new_folder)
-            change_files.incar_change(changes)
+            change_files.incar_change(changes, popkey=['LORBIT'])
             # submit job
             pythonsubmit(folder=new_folder,submit=submit)
         return 0
@@ -152,6 +153,7 @@ class smaller_folders:
         accuraries = {'EDIFF','EDIFFG','ENCUT','PREC','NELM','NELMIN', 'NSW', 'ISMEAR', 'SIGMA', 'LHFCALC','HFSCREEN', 'ALGO', 'AEXX'} 
         popkey = ['LVHAR']
         accuraries = material_incar_dict.keys() & accuraries # intersection between two sets of keywords
+        from funcy import project
         material_incar_dict_acc=project(material_incar_dict, accuraries) # pick accurary keywords
 
         # 2nd input files are put in the 'sources' folder under the 1st-class materials folder
@@ -268,15 +270,15 @@ class smaller_one_folder:
             subfolder=self.folder+sub_name
             find_files(self.folder, header='dielec_elec-part', var='_eps', remove=True) # remove old locpot directory
             changes={'ISTART':1,'LCALCEPS':'.TRUE.','IBRION':-1,'NSW':0, 'ISIF':2}
-            removekey=['LVHAR']
+            removekey=['LVHAR', 'NCORE', 'KPAR']
         elif dielectype==1: # include ionic part screening effect 
             sub_name= 'dielec_ion-part_eps/'
             subfolder=self.folder+sub_name
             find_files(self.folder, header='dielec_ion-part', var='_eps', remove=True) # remove old locpot directory
-            changes={'ISTART':1,'EDIFF':0.000001,'EDIFFG':-0.01,'LCALCEPS':'.TRUE.','IBRION':6,'NSW':200, 'ISIF':2,'POTIM':0.015}
+            changes={'ISTART':1,'EDIFF':1e-6,'EDIFFG':-0.01,'LCALCEPS':'.TRUE.','IBRION':6,'NSW':200, 'ISIF':2,'POTIM':0.015}
             # EDIFF should be tight, otherwise vasp6 does not give the same result as vasp5
             print("\nDon't recommend vasp6! If vasp6, use tight convergence condition like EDIFF=1e-8, also ask for more nodes (don't remember why now) in submit.job; If vasp5, use more time like 12h\n")
-            removekey=['LVHAR']
+            removekey=['LVHAR', 'NCORE', 'KPAR']
         elif dielectype==2: # electronic eps(omega) frequency dependence. Ionic part fixed
             sub_name='dielec_freq-depend_eps/'
             subfolder=self.folder+sub_name
@@ -284,28 +286,30 @@ class smaller_one_folder:
             changes={'ISTART':1,'EDIFF':0.000001,'EDIFFG':-0.01,'LOPTICS':'.TRUE.','IBRION':-1,'NSW':0, 'ISIF':2}
             # Don't need 'ALGO':'Exact', 'ISMEAR':0,  'SIGMA':0.01
             # for small bandgap material use dielectype=3
-            removekey=['LVHAR']
+            removekey=['LVHAR', 'NCORE', 'KPAR']
         elif dielectype==3: # electronic eps(omega) frequency dependence for a small bandgap like 0.2 eV
             sub_name='dielec_freq-smallgap-depend_eps/'
             subfolder=self.folder+sub_name
             find_files(self.folder, header='dielec_freq-smallgap-depend', var='_eps', remove=True) # remove old locpot directory
-            changes={'ISTART':1,'EDIFF':0.000001,'EDIFFG':-0.01,'LOPTICS':'.TRUE.', 'NEDOS':2000,'CSHIFT': '0.100','IBRION':'-1','NSW':0, 'ISIF':2}
-            # for small bandgap material add 'NEDOS':2000,'CSHIFT': '0.100' to changes
-            removekey=['LVHAR']
+            changes={'ISTART':1,'EDIFF':0.000001,'EDIFFG':-0.01,'LOPTICS':'.TRUE.', 'NEDOS':3001,'CSHIFT': '0.100','IBRION':'-1','NSW':0, 'ISIF':2}
+            # for small bandgap material add 'NEDOS':3001,'CSHIFT': '0.100' to changes
+            removekey=['LVHAR', 'NCORE', 'KPAR']
         else: # 
             sub_name='dielec_wavevector1-depend_eps/'
             subfolder=self.folder+sub_name
             find_files(self.folder, header='dielec_wavevector1-depend', var='_eps', remove=True) # remove old locpot directory
             changes={'ISTART':1,'ICHARG':1,'EDIFF':0.000001,'EDIFFG':-0.01,'ALGO':'CHI','LOPTICS':'.TRUE.', 'IBRION':'-1','NSW':0, 'ISIF':2, 'LWAVE':'.FALSE.','LCHARG':'.FALSE.'}
             # ,'KPAR':1
-            removekey=['LVHAR']
+            removekey=['LVHAR', 'NCORE', 'KPAR']
 
         os.mkdir(subfolder) # generate new locpot firectory
-        os.system('cp INCAR KPOINTS POTCAR WAVECAR CHGCAR '+subfolder)
+        os.system('cp INCAR KPOINTS POTCAR  '+subfolder)
+        os.system('ln -s ../WAVECAR %s/WAVECAR ' % subfolder ) # ln -s ../CHGCAR dielec_elec-part_eps/CHGCAR 
+        os.system('ln -s ../CHGCAR %s/CHGCAR' % subfolder )
         if dielectype == 4:
             os.system('cp WAVEDER '+ subfolder) # WAVEDER 
             print('Remember to use VASP 5 to run the code!!')
-        os.system('cp CONTCAR %sPOSCAR' % (subfolder)) # update poscar !
+        os.system('ln -s ../CONTCAR %sPOSCAR' % (subfolder)) # update poscar !
         # edit incar to get eps
         change_files=change_input_files(subfolder)
         change_files.incar_change(changes, popkey=removekey)
@@ -331,33 +335,37 @@ class smaller_one_folder:
         # submit job
         pythonsubmit(folder=subfolder,submit=submit)
 
-    def calc_bs_dos(self, bs_dos, submit):
+    def calc_bs_dos(self, bs_dos, submit=0, kpath=''):
         '''
         band structure: create bs subfolder and run calculation on kpoints
         density of states: create dos subfolder and run dos calculation jobs
         '''
-        if bs_dos == 0: # calculate bandstructure
-            changes={'ISTART':1, 'ICHARG':11, 'ISIF':2, 'NSW':0, 'IBRION': -1, 'NELMIN':5,'LWAVE':'F', 'LCHARG':'F'}
+        if bs_dos == 0 or bs_dos == 2: # calculate bandstructure
+            changes={'ISTART':1, 'ICHARG':11, 'ISIF':2, 'NSW':0, 'IBRION': -1, 'NELMIN':10,'LWAVE':'F', 'LCHARG':'F'}
             sub_name = 'bs_non-self/'
             print('bandstructure calculation... subfolder:%s CONTCAR used. LORBIT=11 is not turned on to save space' % sub_name )
             print('ISMEAR=-5 does not work for BS (tetrahedron method cannot read linemode KPOINTS). Use ISMEAR=0 for semiconductor (or metal). Use ISMEAR=1 or 2 for metal' )
         elif bs_dos == 1: # calculate dos
-            changes={'ISTART':1, 'ICHARG':11, 'ISIF':2, 'NSW':0, 'ISMEAR':-5, 'IBRION': -1, 'LORBIT':11, 'NEDOS':901,'NELMIN':5,'LWAVE':'F', 'LCHARG':'F'}
+            changes={'ISTART':1, 'ICHARG':11, 'ISIF':2, 'NSW':0, 'ISMEAR':-5, 'IBRION': -1, 'LORBIT':11, 'NEDOS':3001,'NELMIN':10,'LWAVE':'F', 'LCHARG':'F'}
             sub_name = 'dos_non-self/'
-            print('\tCould try a different smearing method, like ISMEAR=-4 or -5!\n')
+            print('\tSet ISMEAR=-5 (tetrahedron method). Could try a different smearing method, like ISMEAR=-4!\n')
             print('density of state calculation... subfolder:%s CONTCAR used' % sub_name )
         # create son folder
         new_folder = self.folder+sub_name
         if os.path.isdir(new_folder): # remove old calculations
             shutil.rmtree(new_folder)
         os.mkdir(new_folder)
-        os.system('cp INCAR KPOINTS POTCAR WAVECAR CHGCAR IBZKPT '+new_folder)
-        os.system('cp CONTCAR %sPOSCAR' % (new_folder))
+        os.system('cp submit.job INCAR KPOINTS POTCAR '+new_folder)
+        os.system('ln -s ../WAVECAR %sWAVECAR' % new_folder )
+        os.system('ln -s ../CHGCAR %sCHGCAR' % new_folder )
+        os.system('ln -s ../CONTCAR %sPOSCAR' % new_folder )
+        #os.system('cp CONTCAR %sPOSCAR' % (new_folder))
 
         # edit input files
         change_files=change_input_files(new_folder)
         change_files.incar_change(changes) # write incar file
         if bs_dos == 0: # kpoints should change to find band structure
+            os.system('cp IBZKPT '+new_folder)
             os.chdir(new_folder)
             # 2nd input files are put in the 'sources' folder under the 1st-class materials folder
             # the effect of header='energyf_'+element is to specify which subfolder to update. Avoid updating all energyf_* folders
@@ -366,6 +374,16 @@ class smaller_one_folder:
             #self.hier2direc = self.hierdirecs[1]    # 2nd-class folder eg. '/home/yubi/work/berylliumo/wurtzite_2_vo_hse/'
             self.sources_direc= self.hier1direc+'sources/' # eg. '/home/yubi/work/berylliumo/sources/'
             generate_KPATH(self.sources_direc) # generate kpoints from kpath
+        elif bs_dos == 2:
+            if os.path.exists(kpath):
+                os.system('cp %s %sKPOINTS' % (kpath, new_folder) )
+            else:
+                os.chdir(new_folder)
+                self.hierdirecs = parent_folder(self.folder, hier=10)  # to find 1st-class materials folder
+                self.hier1direc = self.hierdirecs[0]    # 1st-class folder eg. '/home/yubi/work/berylliumo/'
+                self.sources_direc= self.hier1direc+'sources/' # eg. '/home/yubi/work/berylliumo/sources/'
+                kpath=self.sources_direc + 'KPOINTS.' + kpath
+                os.system('cp %s %sKPOINTS' % (kpath, new_folder) )
 
         # submit job
         pythonsubmit(folder=new_folder,submit=submit)
@@ -385,6 +403,7 @@ class smaller_one_folder:
         accuraries = {'EDIFF','EDIFFG','ENCUT','PREC','NELM','NELMIN', 'ISMEAR', 'SIGMA', 'LHFCALC','HFSCREEN', 'ALGO', 'AEXX'} 
         popkey = ['LVHAR']
         accuraries = material_incar_dict.keys() & accuraries # intersection between two sets of keywords
+        from funcy import project
         material_incar_dict_acc=project(material_incar_dict, accuraries) # pick accurary keywords
 
         # 2nd input files are put in the 'sources' folder under the 1st-class materials folder

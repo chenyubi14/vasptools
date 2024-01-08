@@ -149,7 +149,7 @@ class readformationenergy:
         print('\n%se defect energy=%.3f' % (q, Etot))
         f_correction=0
         if q != 0:
-            f_correction= float(read_incar(folder_single, incar='DEFECT')['FREYCORRALL']) # read freysoldt correction
+            f_correction= float(read_incar(folder_single, incar='SAVEINFO')['FREYCORRALL']) # read freysoldt correction
             print(' charged defect freysoldt_correction=%s'% (f_correction))
         n_dot_miu = 0 # initialize n dot miu
         for key in defect_formula:
@@ -244,6 +244,9 @@ class readformationenergy:
         ax=fig.add_subplot(1,1,1)
         # plot each defect
         if lower_bound_plot: # find and save transition levels
+            if not os.path.exists('graphdata'):
+                os.makedirs('graphdata')
+                print('Create folder graphdata/ to save formation_energy plotting data')
             transition_data_fil = open('graphdata/%s_%s_transitionlevel.txt' % (self.miu_elements['condition'],self.comment), 'w')
             for defect_onetype in self.list_defect:
                 print('\n %s' % (defect_onetype.defecttype))
